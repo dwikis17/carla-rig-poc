@@ -1,5 +1,6 @@
-# Python 3.10+ (CARLA 0.9.14+ publishes client wheels for 3.7–3.10/3.12 depending on release;
-# check the wheel list for YOUR server version and pick a matching interpreter).
+# Python 3.10+. Which Python versions have a `carla` client wheel depends on the CARLA release —
+# check PyPI / your server's PythonAPI/carla/dist folder and create the venv with a matching
+# interpreter BEFORE installing anything.
 
 # --- CARLA client -----------------------------------------------------------
 # IMPORTANT: the client version MUST EXACTLY match the CARLA server version you run.

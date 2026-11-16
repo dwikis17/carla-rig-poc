@@ -1,0 +1,104 @@
+# =============================================================================
+# carla-rig-poc — default configuration
+# Every tunable lives here; the code contains no magic numbers.
+# Unknown keys are rejected on load (catches typos like "fixed_delta_second").
+# Loaded + validated by src/carla_rig/config.py.
+# =============================================================================
+
+server:
+  host: "localhost"          # machine running CarlaUE4 / CarlaUnreal
+  port: 2000                 # RPC port (-carla-rpc-port on the server)
+  timeout_s: 10.0            # client RPC timeout; raise it when loading big maps
+  tm_port: 8000              # Traffic Manager port (must be free on the client machine)
+
+world:
+  map: null                  # e.g. "Town03"; null = keep whatever map the server has loaded
+  weather: "ClearNoon"       # name of a carla.WeatherParameters preset (ClearNoon, WetCloudySunset, ...)
+  seed: 42                   # RNG seed for Traffic Manager + NPC spawn selection (reproducible runs)
+  fixed_delta_seconds: 0.05  # simulated seconds per tick → 20 Hz. 0.0333 = 30 Hz, 0.0167 = 60 Hz
+  realtime_pacing: true      # sleep so 1 sim second ≈ 1 wall second (false = run as fast as possible)
+  substepping: true          # physics substepping (needed for stable vehicle physics at large deltas)
+  max_substep_delta_time: 0.01  # max physics step; rule: fixed_delta_seconds <= this * max_substeps
+  max_substeps: 10           # CARLA allows 1..16
+  no_rendering_mode: false   # MUST be false or the camera produces black frames
+  npc_vehicles: 0            # autopilot traffic count (0 = empty roads)
+  tm_hybrid_physics: false   # true = NPCs far from ego skip physics (cheaper with many NPCs)
+
+vehicle:
+  blueprint: "vehicle.tesla.model3"  # exact id or wildcard filter ("vehicle.*" = first match)
+  role_name: "hero"          # 'hero' is the convention other CARLA tools look for
+  spawn_index: 0             # index into map.get_spawn_points(); out of range → error listing the max
+
+camera:
+  width: 1280                # sensor image resolution (px). Matching the window avoids scaling cost.
+  height: 720
+  # Horizontal field of view in degrees.
+  # For a "true-to-life" view, derive it from the physical setup:
+  #     fov = 2 * atan((screen_width / 2) / eye_distance)
+  # Worked example: 60 cm wide monitor viewed from 65 cm:
+  #     fov = 2 * atan(30 / 65) = 2 * 24.8° ≈ 49.6°
+  # Wider values (90°) feel faster and less claustrophobic on a single small screen, which is why
+  # the PoC default is wider than the physically correct value.
+  fov: 90.0
+  default_view: "chase"      # "chase" or "driver" — C toggles at runtime
+  chase:                     # offsets relative to the vehicle origin (metres / degrees)
+    x: -6.0                  # behind the car
+    y: 0.0
+    z: 2.5                   # above the roof
+    pitch: -10.0             # look slightly down
+  driver:
+    x: 0.3                   # roughly the driver's eye point in a mid-size sedan
+    y: -0.35                 # left-hand-drive seat (use +0.35 for right-hand drive)
+    z: 1.25
+    pitch: 0.0
+
+input:
+  source: "keyboard_mouse"   # keyboard_mouse | wheel | serial
+  keyboard:
+    throttle_rise_rate: 1.5  # units/second while W held  (0→1 in ~0.67 s)
+    throttle_fall_rate: 3.0  # units/second after W released
+    brake_rise_rate: 2.5     # units/second while S held
+    brake_fall_rate: 4.0     # units/second after S released
+    steer_rate: 2.0          # how fast steer moves toward ±1 while A/D held (units/s)
+    steer_return_rate: 3.0   # auto-centering speed when A/D released (units/s)
+  mouse:
+    start_enabled: false     # start in mouse-steering mode (M toggles)
+    sensitivity: 0.003       # steer units per pixel of horizontal mouse motion
+    centering_rate: 0.5      # spring back to 0 (units/s); 0 = no spring, wheel stays where you left it
+  wheel:                     # used only by the wheel stub (input/wheel.py)
+    device_index: 0          # pygame joystick index
+    steer_axis: 0
+    throttle_axis: 1
+    brake_axis: 2
+    invert_pedals: true      # many pedal sets report +1 released / -1 pressed
+    pedal_deadzone: 0.05     # ignore the first 5% of pedal travel (sensor noise)
+    steer_deadzone: 0.01
+    wheel_range_deg: 900.0   # lock-to-lock rotation the wheel driver is set to (±450°)
+    max_steer_angle_deg: 450.0  # wheel angle that should map to CARLA steer = ±1
+  serial:                    # used only by the serial stub (input/serial_stalk.py)
+    port: "/dev/ttyACM0"     # macOS: /dev/tty.usbmodemXXXX, Windows: COM3
+    baudrate: 115200
+    read_timeout_s: 0.05     # per-line read timeout on the background thread
+
+control:
+  # Blinker auto-cancel, like a real turn-signal stalk:
+  # once |steer| goes above `arm` during the turn, returning below `center` cancels the blinker.
+  blinker_cancel_arm_threshold: 0.35
+  blinker_cancel_center_threshold: 0.08
+
+hud:
+  window_width: 1280
+  window_height: 720
+  window_title: "CARLA rig PoC"
+  font_size: 20
+  blink_hz: 1.5              # turn-signal flash frequency (real cars: 1–2 Hz)
+  gauge_max_kmh: 200         # full-scale value of the arc speedometer
+  show_help_on_start: true   # controls overlay (H toggles)
+  overrun_display_s: 1.0     # how long the red OVERRUN tag stays visible after an overrun
+
+logging:
+  enabled: true
+  output_dir: "runs"         # each run → runs/<timestamp>/log.csv + config.yaml
+  flush_every_n_rows: 100    # buffer size; at 20 Hz = one disk write per 5 s
+  participant_id: ""         # RESEARCH: participant / session identifier written to every row
+  condition: ""              # RESEARCH: trial condition label written to every row
