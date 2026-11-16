@@ -1,0 +1,22 @@
+# Python 3.10+ (CARLA 0.9.14+ publishes client wheels for 3.7–3.10/3.12 depending on release;
+# check the wheel list for YOUR server version and pick a matching interpreter).
+
+# --- CARLA client -----------------------------------------------------------
+# IMPORTANT: the client version MUST EXACTLY match the CARLA server version you run.
+# A mismatch gives "version mismatch" warnings at best and silent RPC failures / crashes at worst.
+# Uncomment and set it to your server's version, e.g. if you run CARLA 0.9.15:
+#   carla==0.9.15
+# Or install the wheel shipped inside the server package:
+#   pip install <CARLA_ROOT>/PythonAPI/carla/dist/carla-<version>-cp3XX-*.whl
+# carla==X.Y.Z
+
+# --- Runtime -----------------------------------------------------------------
+pygame>=2.5
+numpy>=1.24
+pyyaml>=6.0
+
+# --- Hardware (only needed once you implement the SWAP[hardware] stubs) -------
+# pyserial>=3.5
+
+# --- Tests -------------------------------------------------------------------
+pytest>=7.4
