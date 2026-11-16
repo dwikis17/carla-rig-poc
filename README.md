@@ -9,6 +9,9 @@ that moving to real hardware means **replacing one input class** — nothing els
 The code is also meant to be read: every module starts with a docstring saying what it does and what
 it may import, and comments are tagged so you can grep for them (see [Comment tags](#comment-tags)).
 
+**New here? Start with the [Tutorial](docs/README.md)**: eight short chapters that give the reading
+order, each tagged in git (`chapter-01` … `chapter-08`) so you can see the code grow step by step.
+
 ---
 
 ## Architecture
