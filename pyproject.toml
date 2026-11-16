@@ -1,8 +1,15 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "carla-rig-poc"
 version = "0.1.0"
 description = "Keyboard + mouse proof-of-concept for a CARLA driving-simulator rig"
 requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 # Lets `pytest` find `carla_rig` without installing the package.
