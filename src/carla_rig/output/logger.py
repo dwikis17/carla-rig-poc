@@ -76,6 +76,7 @@ class RunLogger:
         self._fh = (self.run_dir / "log.csv").open("w", newline="", encoding="utf-8")
         self._writer = csv.writer(self._fh)
         self._writer.writerow(csv_columns())
+        self._fh.flush()  # header on disk immediately, so even a crashed run leaves a valid CSV
 
     def write(self, status: VehicleStatus, inp: InputState) -> None:
         if not self.enabled:
