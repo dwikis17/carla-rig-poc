@@ -10,7 +10,7 @@ Import rules
 ------------
 stdlib only. Works on any object with a ``.frame`` attribute, so it is testable without CARLA.
 
-# WHY frame matching? Even in synchronous mode the camera image for frame N can arrive a few
+# WHY: (frame matching) Even in synchronous mode the camera image for frame N can arrive a few
 # milliseconds after ``world.tick()`` returns, and a slow loop can leave older images in the queue.
 # Rendering "whatever is at the front of the queue" would show the driver a stale picture that
 # lags the physics — nauseating at best, invalid research data at worst.
@@ -66,7 +66,7 @@ def drain(q: "queue.Queue[Any]") -> list[Any]:
     Used for EVENT sensors (collision, lane invasion) that only produce data when something
     happens, so there is nothing to wait for on a normal tick.
 
-    # WHY not frame-match events too? Waiting for an event that may never come would stall every
+    # WHY: (events are not frame-matched) Waiting for an event that may never come would stall every
     # tick. An event that arrives a few ms late is simply reported on the next tick (50 ms later at
     # 20 Hz). RESEARCH: if you need exact event frames, log ``event.frame`` instead of the tick.
     """

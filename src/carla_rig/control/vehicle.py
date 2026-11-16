@@ -37,10 +37,10 @@ class BlinkerAutoCancel:
        (left blinker → steer < -arm; right → steer > +arm), like the cam engaging as you turn.
     3. Once armed, |steer| returning below ``center`` turns the blinker off.
 
-    # WHY edge-detect the input (rule 1): an input source may keep reporting "left" after we
+    # WHY: (edge-detect the input (rule 1)) an input source may keep reporting "left" after we
     # auto-cancelled (e.g. it has no feedback hook). Re-adopting it every tick would turn the blinker
     # straight back on. Only a CHANGE in the input counts as the driver touching the stalk.
-    # WHY direction-matched arming: a lane-change wiggle to the right shouldn't cancel a left signal.
+    # WHY: (direction-matched arming) a lane-change wiggle to the right shouldn't cancel a left signal.
     # TUNE: control.blinker_cancel_arm_threshold / control.blinker_cancel_center_threshold
     """
 
@@ -78,7 +78,7 @@ def build_vehicle_control(state: InputState) -> "carla.VehicleControl":
     ctrl.brake = float(state.brake)
     ctrl.steer = float(state.steer)
     ctrl.hand_brake = bool(state.hand_brake)
-    # WHY reverse as a flag (not gear=-1): with manual_gear_shift=False CARLA's automatic gearbox
+    # WHY: (reverse as a flag (not gear=-1)) with manual_gear_shift=False CARLA's automatic gearbox
     # handles forward gears, and `reverse=True` makes throttle push the car backwards.
     ctrl.reverse = bool(state.reverse)
     ctrl.manual_gear_shift = False
@@ -88,7 +88,7 @@ def build_vehicle_control(state: InputState) -> "carla.VehicleControl":
 def compute_light_bits(current_bits: int, blinker: Blinker, braking: bool, reverse: bool) -> int:
     """Return new light-state bits: update blinker/brake/reverse lamps, keep every other lamp.
 
-    # WHY bit-twiddle instead of assigning: headlights, fog lights etc. may be set by the server,
+    # WHY: (bit-twiddle instead of assigning) headlights, fog lights etc. may be set by the server,
     # a scenario, or a future headlight switch. Overwriting the whole mask would turn them off.
     """
     LS = carla.VehicleLightState
@@ -130,7 +130,7 @@ class VehicleController:
             self._light_bits = int(vehicle.get_light_state())
         new_bits = compute_light_bits(self._light_bits, applied.blinker, applied.brake > 0.0, applied.reverse)
         if new_bits != self._light_bits:
-            # WHY only on change: set_light_state is an RPC; sending it every tick wastes budget.
+            # WHY: (only on change) set_light_state is an RPC; sending it every tick wastes budget.
             # The lamp FLASHING is done by CARLA's renderer, we only switch the blinker on/off.
             vehicle.set_light_state(carla.VehicleLightState(new_bits))
             self._light_bits = new_bits

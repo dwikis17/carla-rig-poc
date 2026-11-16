@@ -106,12 +106,12 @@ def run_loop(cfg: Config, sim, inp: InputSource, controller, hud, logger, stats:
             sim.toggle_camera()
 
         # --- 2) CONTROL: send commands for the step we are about to simulate -------------------
-        # WHY before tick: in sync mode the control is consumed by the NEXT tick, so applying it
+        # WHY: (before tick) in sync mode the control is consumed by the NEXT tick, so applying it
         # first means this tick's physics uses this tick's input (no one-frame input lag).
         applied = controller.apply(sim.vehicle, state)
 
         # --- 3) TICK: advance the world exactly one fixed step ---------------------------------
-        # WHY we tick (sync mode): the server waits for us, so sim time advances by exactly dt per
+        # WHY: (we tick (sync mode)) the server waits for us, so sim time advances by exactly dt per
         # loop iteration and every sensor produces exactly one measurement for this frame id.
         frame = sim.world.tick()
         snapshot = sim.world.get_snapshot()
@@ -128,7 +128,7 @@ def run_loop(cfg: Config, sim, inp: InputSource, controller, hud, logger, stats:
         camera_gen_seen = sim.camera_generation
 
         # --- 5) STATUS: what actually happened this tick ---------------------------------------
-        # WHY the snapshot (not vehicle.get_velocity()): it is one consistent picture of frame N,
+        # WHY: (the snapshot (not vehicle.get_velocity())) it is one consistent picture of frame N,
         # already on the client — no extra RPCs, no mixing values from different frames.
         actor = snapshot.find(sim.vehicle.id)
         tf = actor.get_transform()
@@ -157,8 +157,9 @@ def run_loop(cfg: Config, sim, inp: InputSource, controller, hud, logger, stats:
         # --- 6) OUTPUT: draw and present ---------------------------------------------------------
         overrun_recent = (time.perf_counter() - stats.last_overrun_wall) < cfg.hud.overrun_display_s
         hud.render(image, applied, status, sim.camera_view, overrun_recent)
-        # WHY one flip per frame: everything (camera(s) + HUD) is composed off-screen first, then
-        # shown at once. SWAP[multi-monitor]: still exactly one flip for the single spanning window.
+        # WHY: (one flip per frame) everything (camera(s) + HUD) is composed off-screen first, then
+        # shown at once.
+        # SWAP[multi-monitor]: still exactly ONE flip, for the single window spanning all screens.
         pygame.display.flip()
 
         # --- 7) LOG: buffered, so normally just a list append -----------------------------------
@@ -182,7 +183,7 @@ def run_loop(cfg: Config, sim, inp: InputSource, controller, hud, logger, stats:
                 stats.overruns += 1
                 stats.last_overrun_wall = time.perf_counter()
                 if remaining < -dt:
-                    # WHY reset: after a long stall (window drag, GC pause) don't sprint through a
+                    # WHY: (reset) after a long stall (window drag, GC pause) don't sprint through a
                     # burst of catch-up ticks — that would feel like fast-forward to the driver.
                     next_deadline = time.perf_counter()
         elif loop_time > dt:

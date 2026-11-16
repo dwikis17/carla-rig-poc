@@ -13,7 +13,7 @@ Import rules
 May import ``carla`` and ``config``/``utils``. Must NOT import ``pygame`` or anything from
 ``input/``/``output/`` — the simulator layer doesn't know how it is being driven or displayed.
 
-# WHY a context manager with guaranteed cleanup?
+# WHY: (context manager with guaranteed cleanup)
 # In synchronous mode the SERVER WAITS FOR THE CLIENT to call world.tick() before advancing.
 # If this client crashes while the world is still in sync mode, the server just sits there frozen,
 # and the next client you start appears to hang. Leaked actors (a car parked on the spawn point,
@@ -97,7 +97,7 @@ class SimSession:
         client_v = self.client.get_client_version()
         server_v = self.client.get_server_version()  # first RPC → fails here if server is down
         if client_v != server_v:
-            # WHY warn, not abort: dev builds report odd version strings. But a real mismatch causes
+            # WHY: (warn, not abort) dev builds report odd version strings. But a real mismatch causes
             # obscure RPC errors, so make it impossible to miss.
             log.warning("CARLA client %s != server %s — install the matching client wheel!", client_v, server_v)
 
@@ -114,12 +114,12 @@ class SimSession:
         self._original_settings = self.world.get_settings()
 
         settings = self.world.get_settings()
-        # WHY synchronous mode: the server only advances when WE call tick(), so every tick has a
+        # WHY: (synchronous mode) the server only advances when WE call tick(), so every tick has a
         # known sim-time step, physics is reproducible, and no camera frame is ever skipped.
         settings.synchronous_mode = True
         # TUNE: world.fixed_delta_seconds — simulated time per tick (0.05 = 20 Hz).
         settings.fixed_delta_seconds = w.fixed_delta_seconds
-        # WHY substepping: vehicle physics is unstable at 50 ms steps; substeps split each tick into
+        # WHY: (substepping) vehicle physics is unstable at 50 ms steps; substeps split each tick into
         # ≤ max_substep_delta_time physics steps. config.validate() already checked
         # fixed_delta_seconds <= max_substep_delta_time * max_substeps.
         settings.substepping = w.substepping
@@ -197,7 +197,7 @@ class SimSession:
         # where bezel_angle = the angle the bezel gap subtends from the eye (≈ 2*atan(gap/2/eye_dist)).
         # Give each camera its own queue, set each camera's fov from ITS monitor's width/distance,
         # and wait_for_frame() on every queue each tick. Chase view usually stays single-camera.
-        # WHY Rigid attachment: SpringArm smooths motion but lags/jitters in sync mode; for a
+        # WHY: (Rigid attachment) SpringArm smooths motion but lags/jitters in sync mode; for a
         # simulator the view must move exactly with the vehicle.
         self.camera = self.world.spawn_actor(
             bp, self._camera_transform(view), attach_to=self.vehicle,
@@ -239,7 +239,7 @@ class SimSession:
     def toggle_camera(self) -> None:
         """Switch between chase and driver view by respawning the camera.
 
-        # WHY respawn instead of moving: set_transform() on an attached sensor is interpreted
+        # WHY: (respawn instead of moving) set_transform() on an attached sensor is interpreted
         # inconsistently across CARLA versions; destroying and re-attaching is unambiguous.
         # The new camera usually misses the very next frame — main.py tolerates exactly that.
         """
@@ -278,7 +278,7 @@ class SimSession:
         if self.vehicle is not None:
             actors.append(self.vehicle)
         if self.client is not None and actors:
-            # WHY a batch: one RPC instead of N, so cleanup is fast even with many NPCs.
+            # WHY: (a batch) one RPC instead of N, so cleanup is fast even with many NPCs.
             safe("destroy actors",
                  lambda: self.client.apply_batch_sync([carla.command.DestroyActor(a.id) for a in actors]))
         self.camera = self.collision_sensor = self.lane_sensor = self.vehicle = None

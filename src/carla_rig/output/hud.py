@@ -54,7 +54,7 @@ def bgra_to_rgb(raw: bytes | memoryview, width: int, height: int) -> np.ndarray:
     """Convert CARLA's BGRA byte buffer to an (H, W, 3) RGB uint8 array — vectorised, no copies
     beyond the one the channel reorder requires.
 
-    # WHY numpy: a per-pixel Python loop over 1280×720 = 921,600 pixels would take ~1 s per frame.
+    # WHY: (numpy) a per-pixel Python loop over 1280×720 = 921,600 pixels would take ~1 s per frame.
     """
     arr = np.frombuffer(raw, dtype=np.uint8).reshape((height, width, 4))
     return arr[:, :, 2::-1]  # B,G,R(,A) → R,G,B : take channels 2,1,0, drop alpha
@@ -158,7 +158,7 @@ class Hud:
 
     def _draw_blinkers(self, blinker: str, sim_time: float) -> None:
         pg = self._pg
-        # WHY sim time, not wall time: when the loop overruns, sim time slows down with it, so the
+        # WHY: (sim time, not wall time) when the loop overruns, sim time slows down with it, so the
         # blink stays consistent with the world (and recordings/replays look right).
         # One full on/off cycle per 1/blink_hz seconds; on for the first half. TUNE: hud.blink_hz
         lit = (sim_time * self.cfg.blink_hz) % 1.0 < 0.5

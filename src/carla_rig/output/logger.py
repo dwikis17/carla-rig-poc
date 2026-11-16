@@ -9,7 +9,7 @@ Import rules
 ------------
 stdlib + ``state`` + ``config``. Must NOT import ``carla`` or ``pygame``.
 
-# WHY buffered: a disk write can stall for tens of milliseconds (especially on laptops / network
+# WHY: (buffered) a disk write can stall for tens of milliseconds (especially on laptops / network
 # drives). Doing one per tick would eat the 50 ms budget and cause overruns. We collect rows in
 # memory and flush every N rows (TUNE: logging.flush_every_n_rows) and on close.
 """

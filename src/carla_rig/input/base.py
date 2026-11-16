@@ -31,7 +31,7 @@ class InputSource(ABC):
         """Read the device(s) and return the driver's command for this tick.
 
         ``dt`` is the SIMULATED time step (world.fixed_delta_seconds), not wall time.
-        # WHY sim time: ramps and springs then behave identically whether the loop runs in real
+        # WHY: (sim time) ramps and springs then behave identically whether the loop runs in real
         # time, slower (overruns) or faster (realtime_pacing: false).
 
         Must never block for long: it runs inside the tick budget.

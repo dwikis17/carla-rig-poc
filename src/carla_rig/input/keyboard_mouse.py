@@ -126,7 +126,7 @@ class KeyboardMouseInput(InputSource):
     Requires that the pygame display is already initialised (HUD does that) — pygame only
     delivers keyboard events to a window.
 
-    # WHY this class also pumps window events (QUIT, Esc, H): pygame has ONE event queue. If the HUD
+    # WHY: (this class also pumps window events (QUIT, Esc, H)) pygame has ONE event queue. If the HUD
     # also called pygame.event.get(), events would be randomly split between the two readers.
     """
 
