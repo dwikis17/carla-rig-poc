@@ -42,6 +42,7 @@ class ServerConfig:
     host: str = "localhost"
     port: int = 2000
     timeout_s: float = 10.0
+    sensor_timeout_s: float = 2.0
     tm_port: int = 8000
 
 
@@ -248,8 +249,11 @@ def _coerce(tp: Any, value: Any, path: str) -> Any:
 
 def validate(cfg: Config) -> None:
     """Raise ConfigError if the config is internally inconsistent."""
+    if cfg.server.timeout_s <= 0 or cfg.server.sensor_timeout_s <= 0:
+        raise ConfigError("server.timeout_s and server.sensor_timeout_s must be > 0")
+
     w = cfg.world
-    if w.fixed_delta_seconds <= 0:
+    if not math.isfinite(w.fixed_delta_seconds) or w.fixed_delta_seconds <= 0:
         # WHY: fixed_delta_seconds = 0 means "variable time step" in CARLA, which breaks
         # determinism and the frame-matching the loop relies on.
         raise ConfigError("world.fixed_delta_seconds must be > 0 (synchronous mode needs a fixed step)")
@@ -310,9 +314,6 @@ def validate(cfg: Config) -> None:
 
     if cfg.logging.flush_every_n_rows < 1:
         raise ConfigError("logging.flush_every_n_rows must be >= 1")
-
-    if not math.isfinite(w.fixed_delta_seconds):
-        raise ConfigError("world.fixed_delta_seconds must be finite")
 
 
 # ---------------------------------------------------------------------------

@@ -9,6 +9,7 @@ server:
   host: "localhost"          # machine running CarlaUE4 / CarlaUnreal
   port: 2000                 # RPC port (-carla-rpc-port on the server)
   timeout_s: 10.0            # client RPC timeout; raise it when loading big maps
+  sensor_timeout_s: 2.0      # max wait for a tick's camera image before failing loudly
   tm_port: 8000              # Traffic Manager port (must be free on the client machine)
 
 world:
